@@ -11,18 +11,15 @@ class Database
         $this->conn = null;
         try {
             $this->conn = new PDO(
-                "mysql:host=".$this->servername.";port=3307;dbname=csomagfelado;",
+                "mysql:host=" . $this->servername . ";port=3307;dbname=csomagfelado;",
                 $this->username,
                 $this->password
             );
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             // echo "Connected successfully"."<br>";
         } catch (PDOException $e) {
-            echo "Connection failed: " . $e->getMessage()."<br>";
+            echo "Connection failed: " . $e->getMessage() . "<br>";
         }
         return $this->conn;
     }
 }
-
-$db=new Database();
-$db->connect();
