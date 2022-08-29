@@ -32,7 +32,8 @@ class Router
             echo json_encode(array("code" => 404, "message" => "Page not Found"));
             return;
         }
+        $postBody = json_decode(file_get_contents("php://input"));
         $handler = $this->handlers[$method . "_" . $path]["handler"];
-        echo $handler();
+        print_r($handler($_GET,$postBody));
     }
 }
