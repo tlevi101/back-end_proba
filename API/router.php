@@ -82,7 +82,7 @@ class Router
             }
             $params[$key] = $routePoints[$paramIndex];
         }
-        $postBody = json_decode(file_get_contents("php://input"));
+        $postBody = json_decode(file_get_contents("php://input"),true);
         print_r($handler($params,$postBody));
     }
 }

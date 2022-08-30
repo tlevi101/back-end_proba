@@ -28,16 +28,27 @@ class UserController
     public static function createUser($_,$datas){
         //Validation
         $errors=array();
-        if(preg_match('/^[A-Za-z]*$/', $datas->first_name))
-            $errors["first_name"]="First name must be can only contain letters";
-        if(preg_match('/^[A-Za-z]*$/', $datas->last_name))
-            $errors["last_name"]="Last name must be can only contain letters";
-        if(!filter_var($datas->email_adress, FILTER_VALIDATE_EMAIL))
-            $errors["email_adress"]="Email address must be valid";
-        if(preg_match('/+[0-9]*$/', $datas->phone_number))
-            $errors["phone_number"]="Phone number must be start with a '+' and end with a numbers";
-        if(strlen($datas->phone_number) != 12)
-            $errors["phone_number"]="Phone number must be 12 characters long";
+        if(!array_key_exists('first_name',$datas)){
+            $errors["first_name"]="Firstname is required";
+        }
+        else if(preg_match('/^[A-Za-z]*$/', $datas['first_name']))
+            $errors["first_name"]="Firstname can only contain letters";
+        if(!array_key_exists('last_name',$datas)){
+            $errors["last_name"]="Lastname is required";
+        }
+        else if(preg_match('/^[A-Za-z]*$/', $datas['last_name']))
+            $errors["last_name"]="Last name can only contain letters";
+        if(!array_key_exists('email_address',$datas)){
+            $errors["email_address"]="Email is required";
+        }
+        else if(!filter_var($datas['email_address'], FILTER_VALIDATE_EMAIL))
+            $errors["email_address"]="Email address must be valid";
+        if(array_key_exists('phone_number',$datas)){
+            if(preg_match('/"+"^[0-9]*$/', $datas['phone_number']))
+                $errors["phone_number"]="Phone number must be start with a '+' and end with a numbers";
+            if(strlen($datas['phone_number']) != 12)
+                $errors["phone_number"]="Phone number must be 12 characters long";
+        }
         if(count($errors) > 0)
             return json_encode(array(
                 "code"=> 400,
