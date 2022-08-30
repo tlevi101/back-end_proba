@@ -6,29 +6,14 @@ class UserController
 {
     public static function users()
     {
-        $users = array();
         $database = new Database();
         $DB = $database->connect();
         $user = new User($DB);
-        $result = $user->readUsers();
-        if ($result->rowCount() !== 0) {
-
-            while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-                $user = array(
-                    'id' => $row['id'],
-                    'first_name' => $row['first_name'],
-                    'last_name' => $row['last_name'],
-                    'email_address' => $row['email_address'],
-                    'password' => $row['password'],
-                    'phone_number' => $row['phone_number']
-                );
-                array_push($users, $user);
-            }
-        } else {
-            return json_encode(array("code" => 404, "massage" => "No data found"));
-        }
+        $users = $user->readUsers();
+        if (!$users)
+            return json_encode(array("code" => 404, "massage" => "No users were found."));
         return json_encode(array(
-            "code" => 201,
+            "code" => 200,
             "datas" => $users,
         ));
     }
@@ -39,12 +24,22 @@ class UserController
             $errors["first_name"]="First name must be can only contain letters";
         if(preg_match('/^[A-Za-z]*$/', $datas->last_name))
             $errors["last_name"]="Last name must be can only contain letters";
+        if(!filter_var($datas->email_adress, FILTER_VALIDATE_EMAIL))
+            $errors["email_adress"]="Email address must be valid";
+        if(preg_match('/+[0-9]*$/', $datas->phone_number))
+            $errors["phone_number"]="Phone number must be start with a '+' and end with a numbers";
+        if(strlen($datas->phone_number) != 12)
+            $errors["phone_number"]="Phone number must be 12 characters long";
+        if(count($errors) > 0)
+            return json_encode(array(
+                "code"=> 400,
+                "errors"=> $errors,
+            ));
         //After validation
         $database = new Database();
         $DB = $database->connect();
         $user=new User($DB);
         $newUser = $user->createUser($datas);
-        var_dump($newUser);
         return json_encode(array(
             "code" => 201,
             "datas" => $newUser,

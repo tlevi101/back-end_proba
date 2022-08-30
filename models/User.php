@@ -13,10 +13,27 @@
         $this->conn = $db;
     }
     public function readUsers(){
+        $users= array();
         $query="SELECT * FROM ".$this->table;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
-        return $stmt;
+        if ($stmt->rowCount() !== 0) {
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $user = array(
+                    'id' => $row['id'],
+                    'first_name' => $row['first_name'],
+                    'last_name' => $row['last_name'],
+                    'email_address' => $row['email_address'],
+                    'password' => $row['password'],
+                    'phone_number' => $row['phone_number']
+                );
+                array_push($users, $user);
+            }
+        } else {
+            return null;
+        }
+        return $users;
     }
     public function createUser($datas){
         $options = [
