@@ -12,7 +12,14 @@
     public function __construct($db){
         $this->conn = $db;
     }
-    public function readUsers(){
+    public function findOne($id){
+        $query="SELECT * FROM ".$this->table ." WHERE id='".$id."'";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $user= $stmt->fetch(PDO::FETCH_ASSOC);
+        return $user;
+    }
+    public function findAll(){
         $users= array();
         $query="SELECT * FROM ".$this->table;
         $stmt = $this->conn->prepare($query);

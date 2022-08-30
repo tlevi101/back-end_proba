@@ -4,12 +4,20 @@ include_once './Database/database.php';
 include_once './models/User.php';
 class UserController
 {
+    public static function user($id){
+        $database = new Database();
+        $DB = $database->connect();
+        $user = new User($DB);
+        $result = $user->findOne($id);
+        unset($result['password']);
+        return json_encode($result);
+    }
     public static function users()
     {
         $database = new Database();
         $DB = $database->connect();
         $user = new User($DB);
-        $users = $user->readUsers();
+        $users = $user->findAll();
         if (!$users)
             return json_encode(array("code" => 404, "massage" => "No users were found."));
         return json_encode(array(

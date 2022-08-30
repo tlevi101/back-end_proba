@@ -5,20 +5,37 @@ class Router
 
     public function get($path, $handler)
     {
-        $this->newHandler('GET', $path, $handler);
+        $routePoints = explode('/', $path);
+        $params = array(); 
+        foreach($routePoints as $index => $routePoint){
+            if(preg_match("/{.*}/", $routePoint)){
+                $routePoint= str_replace(['{','}'], '', $routePoint);
+                $params[$routePoint]=$index;
+            }
+        }
+        $this->newHandler('GET', $path,$params, $handler);
     }
 
     public function post($path, $handler)
     {
-        $this->newHandler('POST', $path, $handler);
+        $routePoints = explode('/', $path);
+        $params = array(); 
+        foreach($routePoints as $index => $routePoint){
+            if(preg_match("/{.*}/", $routePoint)){
+                $paramName= str_replace(['{','}'], '', $routePoint);
+                $params[$paramName]=$index;
+            }
+        }
+        $this->newHandler('POST', $path,$params, $handler);
     }
 
-    private function newHandler($method, $path, $handler)
+    private function newHandler($method, $path, $params,  $handler)
     {
         array_push($this->handlers,array(
             'method' => $method,
             'path' => $path,
-            'handler' => $handler
+            'params' => $params,
+            'handler' => $handler,
         ));
     }
 
@@ -27,14 +44,25 @@ class Router
     {
         $requestURI = parse_url($_SERVER['REQUEST_URI']);
         $path = $requestURI['path'];
+        $routePoints = explode('/', $path);
+        $params = array();
         $method = $_SERVER['REQUEST_METHOD'];
         $key_of_handler=0;
         $page_found = false;
         $method_found_with_page = false;
         while ($key_of_handler<count($this->handlers) && !$method_found_with_page){
             $handler = $this->handlers[$key_of_handler];
-            $page_found = $page_found || strcmp($handler['path'], $path)==0;
-            $method_found_with_page = strcmp($handler['method'], $method)==0 && strcmp($handler['path'], $path)==0;
+            $excepted_routePoints = explode('/',$handler['path']);
+            $samePath = count($excepted_routePoints)==count($routePoints);
+            if($samePath){
+                foreach ($excepted_routePoints as $key=>$excepted_routePoint){
+                    if(!str_contains($excepted_routePoint, '{')){
+                        $samePath = !$samePath && strcmp($excepted_routePoint, $routePoints[$key])==0;
+                    }   
+                }
+            }
+            $page_found = $page_found || $samePath;
+            $method_found_with_page = strcmp($handler['method'], $method)==0 && $samePath;
             if(!$method_found_with_page)
                 $key_of_handler++;
         }
@@ -43,11 +71,18 @@ class Router
             return;
         }
         if(!$method_found_with_page) {
-            echo json_encode(array("code" => 424, "message" => "Bad method"));
+            echo json_encode(array("code" => 501, "message" => "Bad method"));
             return;
         }
-        $postBody = json_decode(file_get_contents("php://input"));
         $handler = $this->handlers[$key_of_handler]['handler'];
-        print_r($handler($_GET,$postBody));
+        foreach($this->handlers[$key_of_handler]['params'] as $key => $paramIndex) {
+            if(!array_key_exists($paramIndex,$routePoints) ||$routePoints[$paramIndex]==""){
+                echo json_encode(array("code" => 401, "message" => "Missing parameter"));
+                return;
+            }
+            $params[$key] = $routePoints[$paramIndex];
+        }
+        $postBody = json_decode(file_get_contents("php://input"));
+        print_r($handler($params,$postBody));
     }
 }
