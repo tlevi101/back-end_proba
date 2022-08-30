@@ -77,7 +77,7 @@ class Router
         $handler = $this->handlers[$key_of_handler]['handler'];
         foreach ($this->handlers[$key_of_handler]['params'] as $key => $paramIndex) {
             if (!array_key_exists($paramIndex, $routePoints) || $routePoints[$paramIndex] == "") {
-                echo json_encode(array("code" => 401, "message" => "Missing parameter"));
+                echo json_encode(array("code" => 400, "message" => "Missing parameter"));
                 return;
             }
             $params[$key] = $routePoints[$paramIndex];
