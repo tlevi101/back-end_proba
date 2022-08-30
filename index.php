@@ -10,5 +10,6 @@ $router = new Router();
 $router->get("/users", [UserController::class, 'users']);
 $router->post("/users", [UserController::class, 'createUser']);
 $router->get("/parcels/{parcel_number}", [ParcelController::class, 'listParcels']);
+$router->post("/parcels", [ParcelController::class, 'createParcel']);
 
 $router->run();

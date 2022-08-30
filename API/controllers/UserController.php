@@ -61,7 +61,7 @@ class UserController
         $newUser = $user->createUser($datas);
         return json_encode(array(
             "code" => 201,
-            "datas" => $newUser,
+            "user" => $newUser,
         ));
     }
 }
